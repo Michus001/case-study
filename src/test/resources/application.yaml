@@ -1,0 +1,12 @@
+application:
+  configuration:
+    booking-expiration-in-millis: 1000000
+spring:
+  data:
+    redis:
+      port: 60379
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect

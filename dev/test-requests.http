@@ -1,0 +1,38 @@
+POST http://localhost:8080/api/order
+Content-Type: application/json
+
+{
+  "products": []
+}
+
+###
+POST http://localhost:8080/api/product
+Content-Type: application/json
+
+{
+  "name": "Vysocina",
+  "price": 32,
+  "quantity": 5,
+  "unit": "kg"
+}
+
+###
+POST http://localhost:8080/api/order
+Content-Type: application/json
+
+{
+  "products": [
+    {
+      "productId": "4e2c0540-1544-45ba-966d-7b7f05816000",
+      "quantity": 1,
+      "unit": "kg"
+    }
+  ]
+}
+
+
+###
+PATCH http://localhost:8080/api/order/84befeb8-4d99-4f85-9f39-6360c2f80df0/pay
+
+###
+PATCH http://localhost:8080/api/order/123/cancel

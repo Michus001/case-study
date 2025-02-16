@@ -1,0 +1,35 @@
+
+spring:
+  cache:
+    type: redis
+  data:
+    redis:
+      port: 6379
+      host: localhost
+  flyway:
+    enabled: true
+  application:
+    name: orders
+  spring:
+    jpa:
+      properties:
+        hibernate:
+          format_sql: true
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+server:
+  servlet:
+    context-path: /api
+application:
+  configuration:
+    booking-expiration-in-millis: 10000
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG

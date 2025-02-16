@@ -1,0 +1,127 @@
+openapi: 3.0.3
+info:
+  title: Product api
+  description: Api for managing products
+  contact:
+    email: tomas@michalicka.com
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api
+paths:
+  /product:
+    post:
+      operationId: createProduct
+      description: Endpoint to create product
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        201:
+          description: Product was created
+        400:
+          description: Invalid user input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Order was not found
+        500:
+          description: General error
+  /product/{productId}:
+    delete:
+      operationId: deleteProduct
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        200:
+          description: Product was deleted
+        400:
+          description: Invalid user input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Product was not found
+        500:
+          description: General error
+    put:
+      operationId: modifyProduct
+      description: Endpoint to modify product
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Product'
+      responses:
+        200:
+          description: Product was updated
+        400:
+          description: Invalid user input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Product was not found
+        500:
+          description: General error
+
+components:
+  schemas:
+    OrderedProduct:
+      type: object
+      required:
+        - id
+        - quantity
+      properties:
+        id:
+          type: number
+          format: int64
+          minimum: 1
+        quantity:
+          type: integer
+          minimum: 0
+    Product:
+      type: object
+      required:
+        - name
+        - quantity
+        - unit
+        - price
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        quantity:
+          type: integer
+          minimum: 0
+        unit:
+          type: string
+          maxLength: 10
+        price:
+          type: number
+          minimum: 0
+    Error:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        code:
+          type: string
