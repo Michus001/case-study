@@ -5,6 +5,7 @@ import cz.casestudy.interview.products.api.BookingStatus;
 import cz.casestudy.interview.products.api.MissingProduct;
 import cz.casestudy.interview.products.api.ProductBooking;
 import cz.casestudy.interview.products.api.ProductPublicService;
+import cz.casestudy.interview.products.api.exception.InvalidBookingStatus;
 import cz.casestudy.interview.products.api.exception.InvalidUnit;
 import cz.casestudy.interview.products.api.exception.MissingProductException;
 import cz.casestudy.interview.products.api.exception.ProductNotFound;
@@ -77,11 +78,14 @@ public class ProductPublicServiceImpl implements ProductPublicService {
         });
     }
 
+    @Transactional
     @Override
     public void confirmBookings(Collection<UUID> bookingIds) {
         bookingRedisRepository.deleteAllById(bookingIds);
         bookingIds.forEach(bookingId -> {
-            bookingRepository.updateStatus(bookingId, BookingStatus.CONFIRMED);
+            if (bookingRepository.updateStatus(bookingId, BookingStatus.CONFIRMED) != 1) {
+                throw new InvalidBookingStatus("Invalid booking status");
+            };
         });
     }
 
@@ -97,7 +101,7 @@ public class ProductPublicServiceImpl implements ProductPublicService {
     }
 
     private UUID handleBookingSuccess(ProductBooking productBooking, Product product) {
-        Booking booking = bookingRepository.save(Booking.builder().product(product).expiresAt(Instant.now().plusMillis(applicationProperties.getBookingExpirationInMillis())).quantity(productBooking.quantity()).build());
+        Booking booking = bookingRepository.save(Booking.builder().status(BookingStatus.NEW).product(product).expiresAt(Instant.now().plusMillis(applicationProperties.getBookingExpirationInMillis())).quantity(productBooking.quantity()).build());
         bookingRedisRepository.save(new BookingExpirationNotification(booking.getId()));
         return booking.getId();
     }

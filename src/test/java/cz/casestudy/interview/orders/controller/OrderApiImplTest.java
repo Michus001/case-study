@@ -4,8 +4,8 @@ import cz.casestudy.interview.TestRedisConfiguration;
 import cz.casestudy.interview.order.rest.model.Order;
 import cz.casestudy.interview.order.rest.model.OrderWithId;
 import cz.casestudy.interview.order.rest.model.OrderedProduct;
-import cz.casestudy.interview.orders.repository.OrderRepository;
 import cz.casestudy.interview.products.api.MissingProduct;
+import cz.casestudy.interview.products.api.exception.InvalidBookingStatus;
 import cz.casestudy.interview.products.api.exception.InvalidUnit;
 import cz.casestudy.interview.products.api.exception.MissingProductException;
 import cz.casestudy.interview.products.api.exception.ProductNotFound;
@@ -14,10 +14,13 @@ import cz.casestudy.interview.products.model.ProductStatus;
 import cz.casestudy.interview.products.repository.ProductRepository;
 import io.zonky.test.db.AutoConfigureEmbeddedDatabase;
 import jakarta.inject.Inject;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -40,6 +43,12 @@ class OrderApiImplTest {
 
     @Inject
     private ProductRepository productRepository;
+
+    @Inject
+    private EntityManager entityManager;
+
+    @Inject
+    private PlatformTransactionManager transactionManager;
 
     @Test
     void createOrder_validOrder() {
@@ -84,12 +93,28 @@ class OrderApiImplTest {
     }
 
     @Test
-    @Transactional
     void payOrder() {
         final Product product = productRepository.saveAndFlush(Product.builder().name("Houska").price(BigDecimal.valueOf(7.3)).quantity(10).unit("ks").status(ProductStatus.ACTIVE).build());
         final ResponseEntity<OrderWithId> response = orderApi.createOrder(new Order().products(List.of(new OrderedProduct().productId(product.getId()).quantity(2).unit("ks"))));
+
+
         productRepository.findById(product.getId()).ifPresent(p -> assertThat(p.getQuantity()).isEqualTo(8));
-        orderApi.payOrder(response.getBody().getId());
+        final TransactionTemplate trTemplate = new TransactionTemplate(transactionManager);
+        trTemplate.execute(status -> {
+            orderApi.payOrder(response.getBody().getId());
+            productRepository.findById(product.getId()).ifPresent(p -> assertThat(p.getQuantity()).isEqualTo(8));
+            return null;
+        });
+
+    }
+
+    @Test
+    @Transactional
+    void payOrder_expired() {
+        final Product product = productRepository.saveAndFlush(Product.builder().name("Houska").price(BigDecimal.valueOf(7.3)).quantity(10).unit("ks").status(ProductStatus.ACTIVE).build());
+        final ResponseEntity<OrderWithId> response = orderApi.createOrder(new Order().products(List.of(new OrderedProduct().productId(product.getId()).quantity(2).unit("ks"))));
+        orderApi.cancelOrder(response.getBody().getId());
+        assertThatThrownBy(() -> orderApi.payOrder(response.getBody().getId())).isInstanceOf(InvalidBookingStatus.class);
     }
 
 

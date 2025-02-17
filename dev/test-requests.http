@@ -32,7 +32,7 @@ Content-Type: application/json
 
 
 ###
-PATCH http://localhost:8080/api/order/84befeb8-4d99-4f85-9f39-6360c2f80df0/pay
+PATCH http://localhost:8080/api/order/586dd468-4ce9-485e-bd0f-9b6fcfd673d2/pay
 
 ###
-PATCH http://localhost:8080/api/order/123/cancel
+PATCH http://localhost:8080/api/order/586dd468-4ce9-485e-bd0f-9b6fcfd673d2/cancel

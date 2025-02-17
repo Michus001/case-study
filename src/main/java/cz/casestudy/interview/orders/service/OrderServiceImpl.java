@@ -9,6 +9,7 @@ import cz.casestudy.interview.products.api.ProductPublicService;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.Assert;
 
 import java.util.Collection;
@@ -25,6 +26,7 @@ public class OrderServiceImpl implements OrderService {
     @NonNull
     private final OrderRepository orderRepository;
 
+    @Transactional
     public void cancelOrder(UUID orderId) {
         Assert.notNull(orderId, "orderId must not be null");
 
@@ -43,6 +45,7 @@ public class OrderServiceImpl implements OrderService {
         orderRepository.updateStatus(orderId, OrderStatus.PAID);
     }
 
+    @Transactional
     public Order createOrder(Collection<ProductBooking> productBookings) {
         Assert.notNull(productBookings, "productBookings must not be null");
 

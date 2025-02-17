@@ -15,6 +15,6 @@ public interface BookingRepository extends JpaRepository<Booking, UUID> {
 
     @Modifying
     @Query("update Booking b set b.expiresAt = null, b.status = :bookingStatus where b.id = :bookingId and b.status = 'NEW'")
-    void updateStatus(UUID bookingId, BookingStatus bookingStatus);
+    int updateStatus(UUID bookingId, BookingStatus bookingStatus);
 
 }
